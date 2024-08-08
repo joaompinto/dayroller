@@ -1,10 +1,4 @@
 @media (max-width: 768px) {
-    .categories-column {
-        width: 100%;
-        padding: 10px;
-        border-right: none;
-    }
-
     .calendar-container {
         width: 100%;
         margin: 0;
@@ -14,58 +8,49 @@
         flex-direction: column;
     }
 }
+
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
     font-family: Arial, sans-serif;
+    overflow: hidden; /* Prevent scrollbars on the body */
 }
 
 .main-container {
     display: flex;
     width: 100%;
     height: 100vh;
+    overflow: hidden; /* Prevent scrollbars on the main container */
 }
 
-.categories-column {
-    width: 10%;
-    background-color: #f8f8f8;
-    padding: 20px;
-    border-right: 1px solid #ddd;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+.calendar-container {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* This will push the button to the bottom */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    overflow: hidden; /* Prevent scrollbars on the calendar container */
+}
+
+.calendar-header {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    height: 100vh; /* Make sure the column takes full height */
-    box-sizing: border-box; /* Include padding in the height calculation */
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
-.category-list {
-    width: 100%;
-    flex-grow: 1; /* Allow this to grow and take up available space */
-    overflow-y: auto; /* Add scroll if there are many categories */
-    margin-bottom: 20px; /* Add some space above the button */
-}
-
-.category-button {
-    margin: 5px 0;
-    padding: 8px 12px;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    width: 100%;
-    text-align: center;
-    font-weight: bold;
-}
-
-.category-button:hover {
-    opacity: 0.9;
+.calendar-header h1 {
+    margin: 0;
+    color: #333;
 }
 
 #addCategoryBtn {
-    width: 100%;
     padding: 10px;
     background-color: #4CAF50;
     color: white;
@@ -79,47 +64,29 @@ body, html {
     background-color: #45a049;
 }
 
-.calendar-container {
-    width: 90%; /* Calendar container takes 90% of the width */
-    margin: 40px auto;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.calendar-header {
-    padding: 20px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-}
-
-.calendar-header h1 {
-    margin: 0;
-    color: #333;
-}
-
 .calendar-body {
     display: flex;
-    flex-direction: column; /* Keeps calendar grid vertically aligned */
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden; /* Prevent scrollbars on the calendar body */
 }
 
 .calendar-grid {
     width: 100%;
     position: relative;
-    height: 100vh; /* Changed from calc(100vh - 200px) to 100vh */
-    overflow-y: hidden;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Prevent scrollbars on the calendar grid */
 }
 
 .table-header {
     display: flex;
-    background-color: #3498db; /* Blue background */
+    background-color: #3498db;
     font-weight: bold;
-    border-bottom: 2px solid #2980b9; /* Darker blue bottom border */
-    color: white; /* White text for better contrast */
+    border-bottom: 2px solid #2980b9;
+    color: white;
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .header-cell {
@@ -129,11 +96,11 @@ body, html {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    border-right: 1px solid #2980b9; /* Right border for each header cell */
+    border-right: 1px solid #2980b9;
 }
 
 .header-cell:last-child {
-    border-right: none; /* Remove right border from the last header cell */
+    border-right: none;
 }
 
 .set-button {
@@ -142,7 +109,7 @@ body, html {
     top: 50%;
     transform: translateY(-50%);
     padding: 2px 5px;
-    background-color: #2ecc71; /* Green background for the button */
+    background-color: #2ecc71;
     color: white;
     border: none;
     cursor: pointer;
@@ -152,13 +119,12 @@ body, html {
 }
 
 .set-button:hover {
-    background-color: #27ae60; /* Darker green on hover */
+    background-color: #27ae60;
 }
 
 .header-cell span {
-    margin-left: 30px; /* Space for the "Set" button */
+    margin-left: 30px;
 }
-
 
 .table-body {
     overflow-y: auto;
@@ -181,29 +147,28 @@ td:first-child {
     border-left: 1px solid #ddd;
 }
 
-calendar-row:nth-child(even) {
+.calendar-row:nth-child(even) {
     background-color: #f9f9f9;
 }
 
 .calendar-row.weekend {
-    background-color: #e8f5e9; /* Light green background for weekends */
+    background-color: #e8f5e9;
 }
 
 .calendar-row.weekend:nth-child(even) {
-    background-color: #c8e6c9; /* Slightly darker green for even weekend rows */
+    background-color: #c8e6c9;
 }
 
 .calendar-row.weekend .weekday {
-    color: #4caf50; /* Green color for weekend day names */
+    color: #4caf50;
 }
 
-/* Adjust the weekday display */
 .weekday {
-    font-size: 0.75em; /* Further reduce the weekday font size */
+    font-size: 0.75em;
 }
 
 .selected-row {
-    background-color: #b3e5fc !important; /* Light blue for selected rows */
+    background-color: #b3e5fc !important;
 }
 
 .date-header {
@@ -218,55 +183,29 @@ calendar-row:nth-child(even) {
     margin-left: 5px;
 }
 
-
-
 .header-cell.plan-header {
-    background-color: #3498db; /* Use the same color as the date header */
-    color: white; /* Ensure text is readable on the colored background */
-    border-right: 2px solid #2980b9; /* Match the border color of the date header */
+    background-color: #3498db;
+    color: white;
+    border-right: 2px solid #2980b9;
     width: 100%;
 }
 
-.header-cell.plan-header {
-    /* Additional styles specific to the Plan header */
-    border-right: 2px solid #2980b9; /* Match the border color of the date header */
-}
-
-.header-cell.date-header,
-td.date-cell {
-    width: 120px; /* Reduced from 180px */
-    flex: 0 0 120px; /* Reduced from 180px */
-    border-right: 2px solid #2980b9;
-}
-
-/* Adjust the width of the date header cell specifically if needed */
-.header-cell.date-header {
-    border-right: 2px solid #2980b9; /* Slightly thicker border for the date header */
-}
-
-/* Styles for both the Date header and date cells */
 .header-cell.date-header,
 td.date-cell {
     width: 140px;
-    min-width: 140px; /* Ensure minimum width */
-    max-width: 140px; /* Ensure maximum width */
+    min-width: 140px;
+    max-width: 140px;
     flex: 0 0 140px;
-    box-sizing: border-box; /* Include padding and border in the width */
+    box-sizing: border-box;
     padding: 8px;
     border-right: 2px solid #2980b9;
-    overflow: hidden; /* Prevent content from overflowing */
-    white-space: nowrap; /* Keep content on one line */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-}
-
-.header-cell.plan-header {
-    background-color: #3498db; /* Same as the date header */
-    color: white;
-    border-right: 2px solid #2980b9; /* Border color to match the date header */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .plan-cell {
-    border-left: 1px solid #ddd; /* Border to match other cells */
+    border-left: 1px solid #ddd;
 }
 
 .plan-category-element {
@@ -277,7 +216,7 @@ td.date-cell {
     margin: 2px;
     text-align: center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    cursor: default; /* Non-interactive */
+    cursor: default;
 }
 
 #selectionInfo {
@@ -290,6 +229,7 @@ td.date-cell {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0 10px;
+    flex-shrink: 0; /* Prevent selection info from shrinking */
 }
 
 #selectionInfo strong {
@@ -300,4 +240,16 @@ td.date-cell {
     font-weight: bold;
 }
 
+.category-button {
+    margin: 5px 0;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
 
+.category-button:hover {
+    opacity: 0.9;
+}
