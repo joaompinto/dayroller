@@ -139,33 +139,17 @@ function handleRowClick(e) {
     
     if (e.shiftKey && lastSelectedIndex !== -1) {
         updateSelection(rowIndex, true, false);
+    } else if (e.ctrlKey || e.metaKey) {
+        updateSelection(rowIndex, false, true);
     } else {
-        startRowIndex = rowIndex;
-        lastSelectedIndex = rowIndex;
-        updateSelection(rowIndex, false, e.ctrlKey || e.metaKey);
+        updateSelection(rowIndex, false, false);
     }
-}
-
-function handleMouseEnter(e) {
-    if (!isMouseDown) return;
-    
-    const row = $(e.currentTarget);
-    const rowIndex = row.index();
-    
-    updateSelection(rowIndex, true, false);
-}
-
-function handleMouseUp() {
-    isMouseDown = false;
 }
 
 function updateSelection(endRowIndex, isShiftKey, isCtrlKey) {
     if (isShiftKey && lastSelectedIndex !== -1) {
         const start = Math.min(endRowIndex, lastSelectedIndex);
         const end = Math.max(endRowIndex, lastSelectedIndex);
-        
-        $('#calendarBody tr').removeClass('selected-row');
-        selectedRows.clear();
         
         for (let i = start; i <= end; i++) {
             const currentRow = $('#calendarBody tr').eq(i);
@@ -180,18 +164,44 @@ function updateSelection(endRowIndex, isShiftKey, isCtrlKey) {
         } else {
             selectedRows.add(endRowIndex);
         }
-        lastSelectedIndex = endRowIndex;
     } else {
-        $('#calendarBody tr').removeClass('selected-row');
-        const row = $('#calendarBody tr').eq(endRowIndex);
-        row.addClass('selected-row');
-        selectedRows.clear();
-        selectedRows.add(endRowIndex);
-        lastSelectedIndex = endRowIndex;
+        // Check if the clicked row is adjacent to the last selected row
+        const isAdjacent = Math.abs(endRowIndex - lastSelectedIndex) === 1;
+        
+        if (isAdjacent && selectedRows.size > 0) {
+            // Extend selection to include the adjacent row
+            const row = $('#calendarBody tr').eq(endRowIndex);
+            row.addClass('selected-row');
+            selectedRows.add(endRowIndex);
+        } else {
+            // Reset selection and select only the new row
+            $('#calendarBody tr').removeClass('selected-row');
+            selectedRows.clear();
+            const row = $('#calendarBody tr').eq(endRowIndex);
+            row.addClass('selected-row');
+            selectedRows.add(endRowIndex);
+        }
     }
     
+    lastSelectedIndex = endRowIndex;
     updateSelectionInfo();
 }
+
+// ... (rest of the code remains the same)
+
+function handleMouseEnter(e) {
+    if (!isMouseDown) return;
+    
+    const row = $(e.currentTarget);
+    const rowIndex = row.index();
+    
+    updateSelection(rowIndex, true, false);
+}
+
+function handleMouseUp() {
+    isMouseDown = false;
+}
+
 
 function loadNextMonth() {
     currentMonth++;
@@ -240,6 +250,8 @@ $(document).ready(function() {
 
 });
 
+// ... (previous code remains the same)
+
 function handleCategoryClick(e) {
     e.preventDefault();
     
@@ -248,31 +260,42 @@ function handleCategoryClick(e) {
     const textColor = getContrastingTextColor(buttonColor);
     const categoryName = categoryButton.text();
     
-    const value = prompt(`Enter the value for the "${categoryName}" category:`);
+    const value = prompt(`Enter the value for the "${categoryName}" category (or "-" to remove):`);
     
     if (value !== null) {
-        selectedRows.forEach(rowIndex => {
-            const row = $('#calendarBody tr').eq(rowIndex);
-            const planCell = row.find('td.plan-cell');
+        if (value === '-') {
+            // Remove the category from all rows
+            $('#calendarBody tr').each(function() {
+                $(this).find(`.plan-category-element[data-category="${categoryName}"]`).remove();
+            });
             
-            // Check if this category already exists for this row
-            const existingCategory = planCell.find(`.plan-category-element[data-category="${categoryName}"]`);
-            if (existingCategory.length) {
-                if (value.trim() === '') {
-                    // If the new value is empty, remove the existing category
-                    existingCategory.remove();
-                } else {
-                    // If it exists and the new value is not empty, update its text
-                    existingCategory.text(value);
+            // Remove the category button
+            categoryButton.remove();
+            categoryCount--;
+        } else {
+            selectedRows.forEach(rowIndex => {
+                const row = $('#calendarBody tr').eq(rowIndex);
+                const planCell = row.find('td.plan-cell');
+                
+                // Check if this category already exists for this row
+                const existingCategory = planCell.find(`.plan-category-element[data-category="${categoryName}"]`);
+                if (existingCategory.length) {
+                    if (value.trim() === '') {
+                        // If the new value is empty, remove the existing category
+                        existingCategory.remove();
+                    } else {
+                        // If it exists and the new value is not empty, update its text
+                        existingCategory.text(value);
+                    }
+                } else if (value.trim() !== '') {
+                    // If it doesn't exist and the value is not empty, add it
+                    planCell.append(`<div class="plan-category-element" data-category="${categoryName}" style="background-color: ${buttonColor}; color: ${textColor};">${value}</div>`);
                 }
-            } else if (value.trim() !== '') {
-                // If it doesn't exist and the value is not empty, add it
-                planCell.append(`<div class="plan-category-element" data-category="${categoryName}" style="background-color: ${buttonColor}; color: ${textColor};">${value}</div>`);
-            }
-            
-            // Ensure the row remains selected
-            row.addClass('selected-row');
-        });
+                
+                // Ensure the row remains selected
+                row.addClass('selected-row');
+            });
+        }
         
         // Update the selection info
         updateSelectionInfo();

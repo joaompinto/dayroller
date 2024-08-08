@@ -15,14 +15,12 @@ body, html {
     height: 100%;
     width: 100%;
     font-family: Arial, sans-serif;
-    overflow: hidden; /* Prevent scrollbars on the body */
 }
 
 .main-container {
     display: flex;
     width: 100%;
     height: 100vh;
-    overflow: hidden; /* Prevent scrollbars on the main container */
 }
 
 .calendar-container {
@@ -33,51 +31,91 @@ body, html {
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    overflow: hidden; /* Prevent scrollbars on the calendar container */
 }
 
 .calendar-header {
-    padding: 20px;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.calendar-header-top {
+    display: flex;
     align-items: center;
-    flex-shrink: 0; /* Prevent header from shrinking */
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 0; /* Ensure no padding in the container */
 }
 
-.calendar-header h1 {
-    margin: 0;
-    color: #333;
-}
-
-#addCategoryBtn {
-    padding: 10px;
+#addCategoryBtn,
+.category-button {
+    height: 32px;
+    padding: 0 12px;
     background-color: #4CAF50;
     color: white;
     border: none;
     cursor: pointer;
     border-radius: 4px;
     font-weight: bold;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0; /* Remove default margin */
+}
+
+#addCategoryBtn {
+    margin-right: 10px;
 }
 
 #addCategoryBtn:hover {
     background-color: #45a049;
 }
 
+.category-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-grow: 1;
+    overflow-x: auto;
+    padding: 0; /* Remove padding from the list */
+    margin: -2.5px; /* Negative margin to offset the button margins */
+}
+
+.category-button {
+    margin: 2.5px; /* Even margin on all sides */
+    background-color: #3498db;
+}
+
+.category-button:hover {
+    background-color: #2980b9;
+}
+
+#selectionInfo {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.4;
+    text-align: left;
+    padding: 0 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .calendar-body {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden; /* Prevent scrollbars on the calendar body */
 }
 
 .calendar-grid {
     width: 100%;
     position: relative;
-    flex-grow: 1;
+    height: calc(100vh - 60px);
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevent scrollbars on the calendar grid */
 }
 
 .table-header {
@@ -86,7 +124,6 @@ body, html {
     font-weight: bold;
     border-bottom: 2px solid #2980b9;
     color: white;
-    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .header-cell {
@@ -103,27 +140,25 @@ body, html {
     border-right: none;
 }
 
-.set-button {
-    position: absolute;
-    left: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 2px 5px;
-    background-color: #2ecc71;
+.header-cell.plan-header {
+    background-color: #3498db;
     color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 3px;
-    display: inline-block;
-    font-size: 0.9em;
+    border-right: 2px solid #2980b9;
+    width: 100%;
 }
 
-.set-button:hover {
-    background-color: #27ae60;
-}
-
-.header-cell span {
-    margin-left: 30px;
+.header-cell.date-header,
+td.date-cell {
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    flex: 0 0 140px;
+    box-sizing: border-box;
+    padding: 8px;
+    border-right: 2px solid #2980b9;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .table-body {
@@ -171,39 +206,6 @@ td:first-child {
     background-color: #b3e5fc !important;
 }
 
-.date-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.weekday {
-    font-size: 0.8em;
-    color: #666;
-    margin-left: 5px;
-}
-
-.header-cell.plan-header {
-    background-color: #3498db;
-    color: white;
-    border-right: 2px solid #2980b9;
-    width: 100%;
-}
-
-.header-cell.date-header,
-td.date-cell {
-    width: 140px;
-    min-width: 140px;
-    max-width: 140px;
-    flex: 0 0 140px;
-    box-sizing: border-box;
-    padding: 8px;
-    border-right: 2px solid #2980b9;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
 .plan-cell {
     border-left: 1px solid #ddd;
 }
@@ -219,37 +221,24 @@ td.date-cell {
     cursor: default;
 }
 
-#selectionInfo {
-    font-size: 14px;
-    color: #555;
-    margin-top: 10px;
-    line-height: 1.4;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 10px;
-    flex-shrink: 0; /* Prevent selection info from shrinking */
-}
-
-#selectionInfo strong {
-    color: #333;
-}
-
 .selected-row .date-cell {
     font-weight: bold;
 }
 
-.category-button {
-    margin: 5px 0;
-    padding: 8px 12px;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    text-align: center;
-    font-weight: bold;
+/* Custom scrollbar for webkit browsers */
+.category-list::-webkit-scrollbar {
+    height: 6px;
 }
 
-.category-button:hover {
-    opacity: 0.9;
+.category-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.category-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

@@ -8,38 +8,40 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<div class="main-container">
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <div class="category-list">
-                <!-- Existing category buttons will be added here dynamically -->
-            </div>
-            <button id="addCategoryBtn">Add Category</button>
-            <div id="selectionInfo">No days selected</div>
-        </div>
-        <div class="calendar-body">
-            <div class="calendar-grid">
-                <div class="table-header">
-                    <div class="header-cell date-header" aria-label="Date Header">Date</div>
-                    <div class="header-cell plan-header" aria-label="Plan Header">Plan</div>
+    <div class="main-container">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-header-top">
+                    <button id="addCategoryBtn">Add Category</button>
+                    <div class="category-list">
+                        <!-- Category buttons will be added here dynamically -->
+                    </div>
                 </div>
-                <div class="table-body">
-                    <table id="calendarGrid" aria-label="Calendar Grid">
-                        <tbody id="calendarBody">
-                            <!-- Calendar rows will be added here -->
-                        </tbody>
-                    </table>
+                <div id="selectionInfo">No days selected</div>
+            </div>
+            <div class="calendar-body">
+                <div class="calendar-grid">
+                    <div class="table-header">
+                        <div class="header-cell date-header" aria-label="Date Header">Date</div>
+                        <div class="header-cell plan-header" aria-label="Plan Header">Plan</div>
+                    </div>
+                    <div class="table-body">
+                        <table id="calendarGrid" aria-label="Calendar Grid">
+                            <tbody id="calendarBody">
+                                <!-- Calendar rows will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    var year = {{ year }};
-    var month = {{ month }};
-</script>
-<script src="{{ url_for('static', filename='calendarGenerator.js') }}"></script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        var year = {{ year }};
+        var month = {{ month }};
+    </script>
+    <script src="{{ url_for('static', filename='calendarGenerator.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
