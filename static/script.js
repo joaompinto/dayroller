@@ -9,7 +9,7 @@ const neutralColors = [
     '#8E44AD', '#34495E', '#16A085', '#F39C12', '#7F8C8D', '#D35400', '#2C3E50'
 ];
 
-const defaultInstructionText = '<span>Scroll up/down to navigate or click</span> <button id="selectButton">SELECT</button> <span>to create an event</span>';
+const defaultInstructionText = '<span>Scroll or</span> <button id="selectButton">Create Event</button>';
 const selectModeInstructionText = "Click on the first day for your event";
 const lastDayInstructionText = "Click the last day of your event";
 
