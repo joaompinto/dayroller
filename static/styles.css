@@ -41,6 +41,7 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    background-color: #f9f9f9; /* Light gray background */
 }
 
 .calendar-body {
@@ -82,6 +83,10 @@ body, html {
     width: 100%;
     margin-bottom: 10px;
     padding: 0; /* Ensure no padding in the container */
+}
+
+#addCategoryBtn {
+    display: none; /* Hide the Add Category button by default */
 }
 
 #addCategoryBtn,
@@ -259,20 +264,17 @@ td:first-child {
 
 .plan-category-element {
     display: inline-block;
-    padding: 5px 10px;
+    padding: 2px 5px;
+    margin: 2px;
     border-radius: 3px;
     font-size: 0.9em;
-    margin: 2px;
-    text-align: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    color: white;
     cursor: pointer;
     border: none;
-    transition: all 0.3s ease;
 }
 
 .plan-category-element:hover {
     opacity: 0.8;
-    transform: scale(1.05);
 }
 
 .selected-row .date-cell {
@@ -299,7 +301,7 @@ td:first-child {
 
 #editModeBtn {
     padding: 5px 10px;
-    background-color: #000000; /* Changed to black */
+    background-color: #000000;
     color: white;
     border: none;
     border-radius: 4px;
@@ -309,11 +311,10 @@ td:first-child {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 10px;
 }
 
 #editModeBtn:hover {
-    background-color: #333333; /* Dark gray for hover state */
+    background-color: #333333;
 }
 
 
@@ -361,6 +362,123 @@ td:first-child {
 
 .modal-buttons button:hover {
     background-color: #2980b9;
+}
+
+.plan-category-element[data-has-details="true"] {
+    text-decoration: underline;
+}
+
+.calendar-header {
+    border-bottom: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+
+.calendar-header-instructions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; /* Adjust this value as needed */
+    padding: 0 10px;
+}
+
+#selectButton,
+#createEventBtn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+
+#selectButton:hover,
+#createEventBtn:hover {
+    background-color: #45a049;
+}
+
+#selectButton.active {
+    background-color: #555;
+}
+
+
+.color-selection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.color-selection-text {
+    margin-right: 10px;
+}
+
+.color-button-container {
+    display: flex;
+    align-items: center;
+}
+
+.color-button {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    margin: 0 3px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    padding: 0;
+}
+
+.color-button:hover {
+    transform: scale(1.2);
+}
+
+.color-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
+}
+
+.event-name-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+#eventNameInput {
+    padding: 5px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#createEventBtn {
+    margin-right: 5px;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#createEventBtn:hover {
+    background-color: #45a049;
+}
+
+.instruction-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px; /* This adds consistent spacing between flex items */
+}
+
+/* Add this new rule for the text next to the button */
+.instruction-container > span {
+    white-space: nowrap; /* Keeps "for X days" together */
 }
 
 .plan-category-element[data-has-details="true"] {

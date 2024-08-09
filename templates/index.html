@@ -10,44 +10,31 @@
 <body>
     <div class="main-container">
         <div class="calendar-container">
-          <div class="calendar-header" style="display: none;">
-            <div class="calendar-header-top">
-              <button id="addCategoryBtn">Add Category</button>
-              <div class="category-list">
-              </div>
+            <div class="calendar-header">
+                <div class="calendar-header-instructions">
+                    <!-- This will be filled by JavaScript -->
+                </div>
             </div>
-          </div>
-      
-          <div class="calendar-body">
-            <div class="calendar-grid">
-                <div class="table-header">
-                    <div class="header-cell date-header" aria-label="Date Header">
-                      Date (<span id="headerYear"></span>)
+            <div class="calendar-body">
+                <div class="calendar-grid">
+                    <div class="table-header">
+                        <div class="header-cell date-header" aria-label="Date Header">
+                            Date (<span id="headerYear"></span>)
+                        </div>
+                        <div class="header-cell plan-header" aria-label="Plan Header">
+                            Plan
+                            <button id="editModeBtn">Edit</button>
+                        </div>
                     </div>
-                    <div class="header-cell plan-header" aria-label="Plan Header">
-                      Plan
-                      <button id="editModeBtn">Edit</button>
+                    <div class="table-body">
+                        <table>
+                            <tbody id="calendarBody"></tbody>
+                        </table>
                     </div>
                 </div>
-                  
-              <div class="table-body">
-                <table>
-                  <tbody id="calendarBody">
-                    <!-- Calendar rows will be dynamically inserted here -->
-                  </tbody>
-                </table>
-              </div>
             </div>
-          </div>
-      
-          <div class="calendar-footer">
-            <div id="selectionInfo">
-              No days selected
-            </div>
-          </div>
         </div>
-      </div>
-
+    </div>
     
 <script>
         var year = {{ year }};
