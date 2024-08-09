@@ -32,7 +32,49 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.plan-category-element', handlePlanElementClick);
+
+    // Add this new function call
+    setTimeout(scrollToCurrentDay, 500);
 });
+
+function scrollToCurrentDay() {
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
+
+    const currentDayRow = $(`#calendarBody tr[data-year="${currentYear}"][data-month="${getMonthName(currentMonth)}"][data-day="${currentDay}"]`);
+
+    if (currentDayRow.length) {
+        const scrollableDiv = $('.table-body');
+        const tableHeaderHeight = $('.table-header').outerHeight();
+        const rowOffset = currentDayRow.offset().top - scrollableDiv.offset().top;
+        const scrollTop = rowOffset - tableHeaderHeight;
+
+        // Scroll to the calculated position
+        scrollableDiv.scrollTop(scrollTop);
+    } else {
+        console.log("Current day row not found");
+    }
+}
+
+function highlightCurrentDayRow(currentDayRow) {
+    $('.calendar-row').removeClass('current-day');
+    currentDayRow.addClass('current-day');
+    $('.current-day-indicator').remove();
+    const dateCellContent = currentDayRow.find('.date-cell').html();
+    currentDayRow.find('.date-cell').html(`<span class="current-day-indicator">⚫</span> ${dateCellContent}`);
+
+    logVisibleRows();
+}
+
+
+
+function getMonthName(monthNumber) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[monthNumber - 1];
+}
+
 
 function updateInstructions(content) {
     $('.calendar-header-instructions').html(`
@@ -112,7 +154,8 @@ function generateCalendarRows(year, month) {
         const row = $('<tr>')
             .addClass('calendar-row')
             .attr('data-year', year)
-            .attr('data-month', months[month - 1]);
+            .attr('data-month', months[month - 1])
+            .attr('data-day', day);
         
         if (dayOfWeek === 0 || dayOfWeek === 6) {
             row.addClass('weekend');
@@ -127,13 +170,17 @@ function generateCalendarRows(year, month) {
 
         calendarBody.append(row);
     }
+
+    console.log(`Generated rows for ${year}-${month}`); // Debugging line
 }
 
+// Modify the checkScroll function to prevent automatic loading of next month
 function checkScroll() {
     const scrollableDiv = $('.table-body');
     const lastRow = $('#calendarBody tr:last-child');
     
     if (lastRow.length && isVisible(lastRow, scrollableDiv)) {
+        // Commented out to prevent automatic loading of next month
         loadNextMonth();
     }
     
@@ -164,12 +211,20 @@ function isVisible(row, container) {
     return ((elementTop - containerTop + elementHeight) > 0) && ((elementTop - containerTop) < containerHeight);
 }
 
+// Add this function to your script
 function logVisibleRows() {
     const rows = $('#calendarBody tr');
     const visibleRows = [];
+    const scrollableDiv = $('.table-body');
+    const scrollTop = scrollableDiv.scrollTop();
+    const viewportHeight = scrollableDiv.height();
 
     rows.each(function() {
-        if (isVisible(this, $('.table-body'))) {
+        const $row = $(this);
+        const rowTop = $row.position().top - scrollTop;
+        const rowBottom = rowTop + $row.outerHeight();
+
+        if (rowTop >= 0 && rowTop < viewportHeight || rowBottom > 0 && rowBottom <= viewportHeight) {
             visibleRows.push(this);
         }
     });

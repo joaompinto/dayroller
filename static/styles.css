@@ -515,3 +515,11 @@ td:first-child {
 .plan-category-element[data-has-details="true"] {
     text-decoration: underline;
 }
+
+.current-day {
+    background-color: #e6f7ff !important;
+}
+.current-day-indicator {
+    color: #1890ff;
+    margin-right: 5px;
+}
