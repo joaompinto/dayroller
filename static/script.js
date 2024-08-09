@@ -66,9 +66,14 @@ function logVisibleRows() {
 }
 
 const rainbowColors = [
-    '#E63946', '#F4A261', '#FFD166', '#2A9D8F', '#48CAE4', '#3D5A80', '#9D4EDD'
+    '#9D4EDD', // Purple (moved from the end to replace red)
+    '#F4A261', // Light Orange
+    '#FFD166', // Muted Yellow
+    '#2A9D8F', // Teal Green
+    '#48CAE4', // Sky Blue
+    '#3D5A80', // Navy Blue
+    '#8338EC'  // New purple shade
 ];
-
 function getContrastingTextColor(backgroundColor) {
     let r, g, b;
 
