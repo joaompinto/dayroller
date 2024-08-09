@@ -4,6 +4,21 @@ let selectedRows = new Set();
 let isMouseDown = false;
 let startRowIndex = -1;
 let lastSelectedIndex = -1;
+let isEditMode = false;
+
+function toggleEditMode() {
+    isEditMode = !isEditMode;
+    const calendarHeader = $('.calendar-header');
+    const editModeBtn = $('#editModeBtn');
+
+    if (isEditMode) {
+        calendarHeader.show();
+        editModeBtn.text('Read');
+    } else {
+        calendarHeader.hide();
+        editModeBtn.text('Edit');
+    }
+}
 
 function updateLineCount() {
     const rowCount = $('#calendarBody tr').length;
@@ -48,44 +63,37 @@ function logVisibleRows() {
 }
 
 const rainbowColors = [
-    '#E63946', // Bright Red
-    '#F4A261', // Light Orange
-    '#FFD166', // Muted Yellow
-    '#2A9D8F', // Teal Green
-    '#48CAE4', // Sky Blue
-    '#3D5A80', // Navy Blue
-    '#9D4EDD'  // Lavender
+    '#E63946', '#F4A261', '#FFD166', '#2A9D8F', '#48CAE4', '#3D5A80', '#9D4EDD'
 ];
 
 function getContrastingTextColor(backgroundColor) {
     let r, g, b;
 
     if (backgroundColor.startsWith('rgb')) {
-        // Extract RGB values from 'rgb(r, g, b)' format
         [r, g, b] = backgroundColor.match(/\d+/g).map(Number);
     } else if (backgroundColor.startsWith('#')) {
-        // Convert hex to RGB
-        if (backgroundColor.length === 7) { // '#RRGGBB'
+        if (backgroundColor.length === 7) {
             [r, g, b] = [1, 3, 5].map(offset => parseInt(backgroundColor.slice(offset, offset + 2), 16));
-        } else if (backgroundColor.length === 9) { // '#RRGGBBAA'
+        } else if (backgroundColor.length === 9) {
             [r, g, b] = [1, 3, 5].map(offset => parseInt(backgroundColor.slice(offset, offset + 2), 16));
         }
     } else {
         throw new Error('Unsupported color format');
     }
 
-    // Calculate luminance using the YIQ color space
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-
-    // Return white text if the background is dark, otherwise return black
     return (yiq >= 128) ? 'black' : 'white';
 }
+
 function generateCalendarRows(year, month) {
     const calendarBody = $('#calendarBody');
     const date = new Date(year, month - 1, 1);
     const lastDay = new Date(year, month, 0).getDate();
 
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    $('#headerYear').text(year);
 
     for (let day = 1; day <= lastDay; day++) {
         date.setDate(day);
@@ -93,22 +101,18 @@ function generateCalendarRows(year, month) {
         const row = $('<tr>')
             .addClass('calendar-row')
             .attr('data-year', year)
-            .attr('data-month', month);
+            .attr('data-month', months[month - 1]);
         
-        // Add 'weekend' class for Saturday and Sunday
         if (dayOfWeek === 0 || dayOfWeek === 6) {
             row.addClass('weekend');
         }
         
         const dateCell = $('<td>')
-            .html(`${date.toLocaleDateString()} <span class="weekday">${weekdays[dayOfWeek]}</span>`)
-            .addClass('date-cell'); // Apply class to date cells
+            .html(`${(day + '').padStart(2, '0')} ${months[month - 1]} <span class="weekday">${weekdays[dayOfWeek]}</span>`)
+            .addClass('date-cell');
 
         row.append(dateCell);
-
-        // Add the "Plan" column cell
         row.append($('<td>').addClass('plan-cell'));
-
 
         calendarBody.append(row);
     }
@@ -135,59 +139,60 @@ function handleRowClick(e) {
     const row = $(e.currentTarget);
     const rowIndex = row.index();
     
-    isMouseDown = true;
-    
     if (e.shiftKey && lastSelectedIndex !== -1) {
-        updateSelection(rowIndex, true, false);
+        selectRowsBetween(lastSelectedIndex, rowIndex);
     } else if (e.ctrlKey || e.metaKey) {
-        updateSelection(rowIndex, false, true);
+        toggleRowSelection(rowIndex);
     } else {
-        updateSelection(rowIndex, false, false);
-    }
-}
-
-function updateSelection(endRowIndex, isShiftKey, isCtrlKey) {
-    if (isShiftKey && lastSelectedIndex !== -1) {
-        const start = Math.min(endRowIndex, lastSelectedIndex);
-        const end = Math.max(endRowIndex, lastSelectedIndex);
-        
-        for (let i = start; i <= end; i++) {
-            const currentRow = $('#calendarBody tr').eq(i);
-            currentRow.addClass('selected-row');
-            selectedRows.add(i);
-        }
-    } else if (isCtrlKey) {
-        const row = $('#calendarBody tr').eq(endRowIndex);
-        row.toggleClass('selected-row');
-        if (selectedRows.has(endRowIndex)) {
-            selectedRows.delete(endRowIndex);
+        if (selectedRows.size === 1 && rowIndex > lastSelectedIndex) {
+            // If only one row is selected and clicking below it, select all rows in between
+            selectRowsBetween(lastSelectedIndex, rowIndex);
         } else {
-            selectedRows.add(endRowIndex);
-        }
-    } else {
-        // Check if the clicked row is adjacent to the last selected row
-        const isAdjacent = Math.abs(endRowIndex - lastSelectedIndex) === 1;
-        
-        if (isAdjacent && selectedRows.size > 0) {
-            // Extend selection to include the adjacent row
-            const row = $('#calendarBody tr').eq(endRowIndex);
-            row.addClass('selected-row');
-            selectedRows.add(endRowIndex);
-        } else {
-            // Reset selection and select only the new row
-            $('#calendarBody tr').removeClass('selected-row');
-            selectedRows.clear();
-            const row = $('#calendarBody tr').eq(endRowIndex);
-            row.addClass('selected-row');
-            selectedRows.add(endRowIndex);
+            // In all other cases, select only the clicked row
+            selectSingleRow(rowIndex);
         }
     }
     
-    lastSelectedIndex = endRowIndex;
     updateSelectionInfo();
 }
 
-// ... (rest of the code remains the same)
+
+function selectRowsBetween(start, end) {
+    const minIndex = Math.min(start, end);
+    const maxIndex = Math.max(start, end);
+    
+    $('#calendarBody tr').each(function(index) {
+        if (index >= minIndex && index <= maxIndex) {
+            $(this).addClass('selected-row');
+            selectedRows.add(index);
+        } else {
+            $(this).removeClass('selected-row');
+            selectedRows.delete(index);
+        }
+    });
+    
+    lastSelectedIndex = end;
+}
+
+function toggleRowSelection(index) {
+    const row = $('#calendarBody tr').eq(index);
+    row.toggleClass('selected-row');
+    if (selectedRows.has(index)) {
+        selectedRows.delete(index);
+    } else {
+        selectedRows.add(index);
+        lastSelectedIndex = index;
+    }
+}
+
+function selectSingleRow(index) {
+    $('#calendarBody tr').removeClass('selected-row');
+    selectedRows.clear();
+    const row = $('#calendarBody tr').eq(index);
+    row.addClass('selected-row');
+    selectedRows.add(index);
+    lastSelectedIndex = index;
+}
 
 function handleMouseEnter(e) {
     if (!isMouseDown) return;
@@ -195,13 +200,13 @@ function handleMouseEnter(e) {
     const row = $(e.currentTarget);
     const rowIndex = row.index();
     
-    updateSelection(rowIndex, true, false);
+    selectRowsBetween(lastSelectedIndex, rowIndex);
+    updateSelectionInfo();
 }
 
 function handleMouseUp() {
     isMouseDown = false;
 }
-
 
 function loadNextMonth() {
     currentMonth++;
@@ -224,33 +229,28 @@ function checkScroll() {
 }
 
 $(document).ready(function() {
-    currentYear = year || new Date().getFullYear();
-    currentMonth = month || new Date().getMonth() + 1;
+    currentYear = new Date().getFullYear();
+    currentMonth = new Date().getMonth() + 1;
     
-    generateCalendarRows(currentYear, currentMonth, categoryCount);
+    generateCalendarRows(currentYear, currentMonth);
+
+    $('#editModeBtn').on('click', toggleEditMode);
 
     $('.table-body').on('scroll', checkScroll);
     $('#addCategoryBtn').on('click', addCategory);
 
     $('#calendarBody')
-    .on('mousedown', 'tr', handleRowClick)
-    .on('mouseenter', 'tr', handleMouseEnter);
+        .on('mousedown', 'tr', handleRowClick)
+        .on('mouseenter', 'tr', handleMouseEnter);
 
-    $(document)
-        .on('mouseup', handleMouseUp);
+    $(document).on('mouseup', handleMouseUp);
 
-    // Prevent context menu on the calendar body
     $('#calendarBody').on('contextmenu', function(e) {
         e.preventDefault();
     });
 
-    // Attach event listener to category buttons
     $(document).on('click', '.category-button', handleCategoryClick);
-
-
 });
-
-// ... (previous code remains the same)
 
 function handleCategoryClick(e) {
     e.preventDefault();
@@ -264,12 +264,10 @@ function handleCategoryClick(e) {
     
     if (value !== null) {
         if (value === '-') {
-            // Remove the category from all rows
             $('#calendarBody tr').each(function() {
                 $(this).find(`.plan-category-element[data-category="${categoryName}"]`).remove();
             });
             
-            // Remove the category button
             categoryButton.remove();
             categoryCount--;
         } else {
@@ -277,27 +275,21 @@ function handleCategoryClick(e) {
                 const row = $('#calendarBody tr').eq(rowIndex);
                 const planCell = row.find('td.plan-cell');
                 
-                // Check if this category already exists for this row
                 const existingCategory = planCell.find(`.plan-category-element[data-category="${categoryName}"]`);
                 if (existingCategory.length) {
                     if (value.trim() === '') {
-                        // If the new value is empty, remove the existing category
                         existingCategory.remove();
                     } else {
-                        // If it exists and the new value is not empty, update its text
                         existingCategory.text(value);
                     }
                 } else if (value.trim() !== '') {
-                    // If it doesn't exist and the value is not empty, add it
                     planCell.append(`<div class="plan-category-element" data-category="${categoryName}" style="background-color: ${buttonColor}; color: ${textColor};">${value}</div>`);
                 }
                 
-                // Ensure the row remains selected
                 row.addClass('selected-row');
             });
         }
         
-        // Update the selection info
         updateSelectionInfo();
     }
 }
@@ -319,17 +311,16 @@ function updateSelectionInfo() {
 
     let infoText = `<strong>${count}</strong> day${count !== 1 ? 's' : ''} selected`;
     if (weekendCount > 0) {
-        infoText += ` (incl. <strong>${weekendCount}</strong> weekend)`;
+        infoText += ` (<strong>${weekendCount}</strong> weekend days)`;
     }
 
-    // Add category counts
     const categoryCounts = countCategories();
     if (Object.keys(categoryCounts).length > 0) {
-        infoText += " | Categories:";
+        infoText += " |";
         for (const [category, categoryCount] of Object.entries(categoryCounts)) {
-            infoText += ` ${category} (${categoryCount}),`;
+            infoText += ` ${category} (<strong>${categoryCount}</strong>),`;
         }
-        infoText = infoText.slice(0, -1); // Remove the last comma
+        infoText = infoText.slice(0, -1);
     }
 
     $('#selectionInfo').html(infoText);
