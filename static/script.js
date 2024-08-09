@@ -53,21 +53,39 @@ function scrollToCurrentDay() {
 
         // Scroll to the calculated position
         scrollableDiv.scrollTop(scrollTop);
+
+        // Apply the disabled-like style to past days including today
+        applyDisabledStyleToPastDays(currentYear, currentMonth, currentDay);
     } else {
         console.log("Current day row not found");
     }
 }
 
-function highlightCurrentDayRow(currentDayRow) {
-    $('.calendar-row').removeClass('current-day');
-    currentDayRow.addClass('current-day');
-    $('.current-day-indicator').remove();
-    const dateCellContent = currentDayRow.find('.date-cell').html();
-    currentDayRow.find('.date-cell').html(`<span class="current-day-indicator">⚫</span> ${dateCellContent}`);
+function applyDisabledStyleToPastDays(currentYear, currentMonth, currentDay) {
+    $('#calendarBody tr').each(function() {
+        const rowYear = $(this).attr('data-year');
+        const rowMonth = getMonthNumber($(this).attr('data-month'));
+        const rowDay = $(this).attr('data-day');
 
-    logVisibleRows();
+        // Check if the date is in the past (including today)
+        if (
+            rowYear < currentYear ||
+            (rowYear == currentYear && rowMonth < currentMonth) ||
+            (rowYear == currentYear && rowMonth == currentMonth && rowDay <= currentDay)
+        ) {
+            // Apply a disabled-like color style and add a 'disabled-day' class
+            $(this).css('color', '#B0B0B0').addClass('disabled-day'); // Light gray color to indicate disabled state
+        }
+    });
 }
 
+function getMonthNumber(monthName) {
+    const months = {
+        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+        'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+    };
+    return months[monthName];
+}
 
 
 function getMonthName(monthNumber) {
@@ -120,9 +138,11 @@ function toggleSelectMode() {
     if (isSelectMode) {
         updateInstructions(selectModeInstructionText);
         startSelectionMode();
+        hideDisabledDays();  // Hide disabled days when select mode is active
     } else {
         updateInstructions(defaultInstructionText);
         endSelectionMode();
+        showDisabledDays();  // Show disabled days when exiting select mode
     }
     attachButtonListeners();
     logSelectState();
@@ -479,4 +499,12 @@ function showEventEditModal(button, name, color, details) {
             modal.remove();
         }
     });
+}
+
+function hideDisabledDays() {
+    $('#calendarBody tr.disabled-day').hide();
+}
+
+function showDisabledDays() {
+    $('#calendarBody tr.disabled-day').show();
 }
