@@ -55,10 +55,13 @@ function logVisibleRows() {
         const lastVisibleRow = $(visibleRows[visibleRows.length - 1]);
 
         console.log('Visible rows:', visibleRows.length);
-        console.log('First visible row:', firstVisibleRow.find('.date-header').text());
-        console.log('Last visible row:', lastVisibleRow.find('.date-header').text());
+        console.log('First visible row:', firstVisibleRow.find('.date-cell').text());
+        console.log('Last visible row:', lastVisibleRow.find('.date-cell').text());
+
+        return firstVisibleRow;
     } else {
         console.log('No visible rows');
+        return null;
     }
 }
 
@@ -225,7 +228,13 @@ function checkScroll() {
         loadNextMonth();
     }
     
-    logVisibleRows();
+    const firstVisibleRow = logVisibleRows();
+    if (firstVisibleRow) {
+        const yearAttr = firstVisibleRow.attr('data-year');
+        if (yearAttr && yearAttr !== $('#headerYear').text()) {
+            $('#headerYear').text(yearAttr);
+        }
+    }
 }
 
 $(document).ready(function() {
@@ -254,6 +263,11 @@ $(document).ready(function() {
 
 function handleCategoryClick(e) {
     e.preventDefault();
+    
+    if (selectedRows.size === 0) {
+        alert("Please select at least one day before applying a category.");
+        return;
+    }
     
     const categoryButton = $(e.currentTarget);
     const buttonColor = categoryButton.css('background-color');
