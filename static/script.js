@@ -264,6 +264,7 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.category-button', handleCategoryClick);
+    $(document).on('click', '.plan-category-element', handlePlanElementClick);
 });
 
 function handleCategoryClick(e) {
@@ -283,12 +284,7 @@ function handleCategoryClick(e) {
     
     if (value !== null) {
         if (value === '-') {
-            $('#calendarBody tr').each(function() {
-                $(this).find(`.plan-category-element[data-category="${categoryName}"]`).remove();
-            });
-            
-            categoryButton.remove();
-            categoryCount--;
+            // ... (removal code remains the same)
         } else {
             selectedRows.forEach(rowIndex => {
                 const row = $('#calendarBody tr').eq(rowIndex);
@@ -299,10 +295,10 @@ function handleCategoryClick(e) {
                     if (value.trim() === '') {
                         existingCategory.remove();
                     } else {
-                        existingCategory.text(value);
+                        existingCategory.text(value).data('details', '').attr('data-has-details', 'false');
                     }
                 } else if (value.trim() !== '') {
-                    planCell.append(`<div class="plan-category-element" data-category="${categoryName}" style="background-color: ${buttonColor}; color: ${textColor};">${value}</div>`);
+                    planCell.append(`<button class="plan-category-element" data-category="${categoryName}" data-details="" data-has-details="false" style="background-color: ${buttonColor}; color: ${textColor};">${value}</button>`);
                 }
                 
                 row.addClass('selected-row');
@@ -356,4 +352,50 @@ function countCategories() {
         });
     });
     return categoryCounts;
+}
+
+function handlePlanElementClick(e) {
+    e.stopPropagation(); // Prevent triggering row selection
+    const button = $(e.currentTarget);
+    const category = button.data('category');
+    const currentValue = button.text();
+    const currentDetails = button.data('details') || '';
+    
+    // Create a modal dialog
+    const modal = $('<div class="event-modal"></div>');
+    modal.html(`
+        <h3>Edit event for "${category}"</h3>
+        <input type="text" id="eventTitle" value="${currentValue}" placeholder="Event title">
+        <textarea id="eventDetails" placeholder="Event details">${currentDetails}</textarea>
+        <div class="modal-buttons">
+            <button id="saveEvent">Save</button>
+            <button id="cancelEvent">Cancel</button>
+        </div>
+    `);
+    
+    $('body').append(modal);
+    modal.show();
+    
+    $('#saveEvent').on('click', function() {
+        const newValue = $('#eventTitle').val().trim();
+        const newDetails = $('#eventDetails').val().trim();
+        
+        if (newValue !== '') {
+            button.text(newValue).data('details', newDetails);
+            
+            // Update the data-has-details attribute
+            if (newDetails !== '') {
+                button.attr('data-has-details', 'true');
+            } else {
+                button.attr('data-has-details', 'false');
+            }
+        } else {
+            button.remove();
+        }
+        modal.remove();
+    });
+    
+    $('#cancelEvent').on('click', function() {
+        modal.remove();
+    });
 }
