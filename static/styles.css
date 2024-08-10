@@ -445,14 +445,15 @@ td:first-child {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 5px;
 }
 
 #eventNameInput {
-    margin-right: 10px;
+    width: 150px; /* Adjust this value to your preferred width */
     padding: 5px;
+    margin-right: 10px;
     border: 1px solid #ccc;
     border-radius: 3px;
+    font-size: 14px;
 }
 
 .instruction-container {
@@ -473,7 +474,7 @@ td:first-child {
     align-items: center;
 }
 
-#selectButton, #createEventBtn {
+#selectButton {
     padding: 5px 10px;
     background-color: #4CAF50;
     color: white;
@@ -485,6 +486,17 @@ td:first-child {
     white-space: nowrap;
 }
 
+#createEventBtn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
+    white-space: nowrap;
+}
 
 #selectButton:hover, #createEventBtn:hover {
     background-color: #45a049;
