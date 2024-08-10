@@ -17,12 +17,13 @@ const lastDayInstructionText = "Click the last day of your event";
 
 $(document).ready(function() {
     currentYear = new Date().getFullYear();
-    currentMonth = new Date().getMonth() + 1;
+    currentMonth = new Date().getMonth() + 1; // 1-12
     
     updatePlanHeaderControls(defaultInstructionText);
     attachButtonListeners();
 
     generateCalendarRows(currentYear, currentMonth);
+    loadEventsFromStorage();
 
     $('.table-body').on('scroll', checkScroll);
 
@@ -31,7 +32,6 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
-    // Add this new function call
     setTimeout(scrollToCurrentDay, 500);
 });
 
@@ -44,71 +44,15 @@ function attachButtonListeners() {
     $('#createEventBtn').off('click').on('click', handleCreateEvent);
 }
 
-
-
-function scrollToCurrentDay() {
-    const today = new Date();
-    const currentDay = today.getDate();
-    const currentMonth = today.getMonth() + 1;
-    const currentYear = today.getFullYear();
-
-    const currentDayRow = $(`#calendarBody tr[data-year="${currentYear}"][data-month="${getMonthName(currentMonth)}"][data-day="${currentDay}"]`);
-
-    if (currentDayRow.length) {
-        const scrollableDiv = $('.table-body');
-        const tableHeaderHeight = $('.table-header').outerHeight();
-        const rowOffset = currentDayRow.offset().top - scrollableDiv.offset().top;
-        const scrollTop = rowOffset - tableHeaderHeight;
-
-        // Scroll to the calculated position
-        scrollableDiv.scrollTop(scrollTop);
-
-        // Apply the disabled-like style to past days including today
-        applyDisabledStyleToPastDays(currentYear, currentMonth, currentDay);
-    } else {
-        console.log("Current day row not found");
-    }
-}
-
-function applyDisabledStyleToPastDays(currentYear, currentMonth, currentDay) {
-    $('#calendarBody tr').each(function() {
-        const rowYear = $(this).attr('data-year');
-        const rowMonth = getMonthNumber($(this).attr('data-month'));
-        const rowDay = $(this).attr('data-day');
-
-        // Check if the date is in the past (including today)
-        if (
-            rowYear < currentYear ||
-            (rowYear == currentYear && rowMonth < currentMonth) ||
-            (rowYear == currentYear && rowMonth == currentMonth && rowDay <= currentDay)
-        ) {
-            // Apply a disabled-like color style and add a 'disabled-day' class
-            $(this).css('color', '#B0B0B0').addClass('disabled-day'); // Light gray color to indicate disabled state
-        }
-    });
-}
-
-function getMonthNumber(monthName) {
-    const months = {
-        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
-        'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
-    };
-    return months[monthName];
-}
-
-function getMonthName(monthNumber) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months[monthNumber - 1];
-}
-
-
 function generateCalendarRows(year, month) {
     const calendarBody = $('#calendarBody');
+    calendarBody.empty(); // Clear existing rows
+
     const date = new Date(year, month - 1, 1);
     const lastDay = new Date(year, month, 0).getDate();
 
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     $('#headerYear').text(year);
 
@@ -118,7 +62,7 @@ function generateCalendarRows(year, month) {
         const row = $('<tr>')
             .addClass('calendar-row')
             .attr('data-year', year)
-            .attr('data-month', months[month - 1])
+            .attr('data-month', monthNames[month - 1])
             .attr('data-day', day);
         
         if (dayOfWeek === 0 || dayOfWeek === 6) {
@@ -126,16 +70,94 @@ function generateCalendarRows(year, month) {
         }
         
         const dateCell = $('<td>')
-            .html(`${(day + '').padStart(2, '0')} ${months[month - 1]} <span class="weekday">${weekdays[dayOfWeek]}</span>`)
+            .html(`${(day + '').padStart(2, '0')} ${monthNames[month - 1]} <span class="weekday">${weekdays[dayOfWeek]}</span>`)
             .addClass('date-cell');
 
+        const planCell = $('<td>').addClass('plan-cell');
+
         row.append(dateCell);
-        row.append($('<td>').addClass('plan-cell'));
+        row.append(planCell);
 
         calendarBody.append(row);
     }
 
-    console.log(`Generated rows for ${year}-${month}`); // Debugging line
+    console.log(`Generated rows for ${year}-${month}`);
+}
+
+function loadEventsFromStorage() {
+    const events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+    events.forEach(event => {
+        addEventToCalendar(event);
+    });
+}
+
+function addEventToCalendar(event) {
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const row = $(`#calendarBody tr[data-year="${d.getFullYear()}"][data-month="${monthNames[d.getMonth()]}"][data-day="${d.getDate()}"]`);
+        if (row.length) {
+            const eventElement = createEventElement(event);
+            row.find('.plan-cell').append(eventElement);
+        }
+    }
+}
+
+function createEventElement(event) {
+    return $('<button>')
+        .addClass('plan-category-element')
+        .text(event.name)
+        .css('background-color', event.color)
+        .data('event', event)
+        .attr('data-has-details', event.details ? 'true' : 'false');
+}
+
+function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+    } else if (currentMonth < 1) {
+        currentMonth = 12;
+        currentYear--;
+    }
+    generateCalendarRows(currentYear, currentMonth);
+    loadEventsFromStorage();
+}
+
+function scrollToCurrentDay() {
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
+
+    const currentDayRow = $(`#calendarBody tr[data-year="${currentYear}"][data-month="${getMonthName(currentMonth - 1)}"][data-day="${currentDay}"]`);
+
+    if (currentDayRow.length) {
+        const scrollableDiv = $('.table-body');
+        const tableHeaderHeight = $('.table-header').outerHeight();
+        const rowOffset = currentDayRow.offset().top - scrollableDiv.offset().top;
+        const scrollTop = rowOffset - tableHeaderHeight;
+
+        scrollableDiv.scrollTop(scrollTop);
+    } else {
+        console.log("Current day row not found");
+    }
+}
+
+function getMonthNumber(monthName) {
+    const months = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+    };
+    return months[monthName] !== undefined ? months[monthName] : -1;
+}
+
+function getMonthName(monthNumber) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[monthNumber];
 }
 
 function checkScroll() {
@@ -144,7 +166,7 @@ function checkScroll() {
     
     if (lastRow.length && isVisible(lastRow, scrollableDiv)) {
         // Commented out to prevent automatic loading of next month
-        loadNextMonth();
+        // loadNextMonth();
     }
     
     const firstVisibleRow = logVisibleRows();
@@ -154,15 +176,6 @@ function checkScroll() {
             $('#headerYear').text(yearAttr);
         }
     }
-}
-
-function loadNextMonth() {
-    currentMonth++;
-    if (currentMonth > 12) {
-        currentMonth = 1;
-        currentYear++;
-    }
-    generateCalendarRows(currentYear, currentMonth);
 }
 
 function isVisible(row, container) {
@@ -206,7 +219,15 @@ function logVisibleRows() {
     }
 }
 
-// Export functions and variables that need to be accessed by eventHandlers.js
+// Make sure to expose necessary functions to the global scope
+window.generateCalendarRows = generateCalendarRows;
+window.loadEventsFromStorage = loadEventsFromStorage;
+window.addEventToCalendar = addEventToCalendar;
+window.changeMonth = changeMonth;
+window.updatePlanHeaderControls = updatePlanHeaderControls;
+window.attachButtonListeners = attachButtonListeners;
+
+// Expose variables that need to be accessed by eventHandlers.js
 window.calendarCore = {
     currentYear,
     currentMonth,
@@ -218,9 +239,5 @@ window.calendarCore = {
     neutralColors,
     defaultInstructionText,
     selectModeInstructionText,
-    lastDayInstructionText,
-    updatePlanHeaderControls,
-    attachButtonListeners,
-    generateCalendarRows
-    // ... (include other functions you want to make accessible)
+    lastDayInstructionText
 };

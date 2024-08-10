@@ -10,15 +10,13 @@ function toggleSelectMode() {
     clearSelection();
     
     if (calendarCore.isSelectMode) {
-        calendarCore.updatePlanHeaderControls(calendarCore.selectModeInstructionText);
+        updatePlanHeaderControls(calendarCore.selectModeInstructionText);
         startSelectionMode();
-        hideDisabledDays();
     } else {
-        calendarCore.updatePlanHeaderControls(calendarCore.defaultInstructionText);
+        updatePlanHeaderControls(calendarCore.defaultInstructionText);
         endSelectionMode();
-        showDisabledDays();
     }
-    calendarCore.attachButtonListeners();
+    attachButtonListeners();
     logSelectState();
 }
 
@@ -48,14 +46,14 @@ function handleRowClick(e) {
             selectSingleRow(rowIndex);
             calendarCore.firstSelectedIndex = rowIndex;
             calendarCore.selectionState = 'first';
-            calendarCore.updatePlanHeaderControls(calendarCore.lastDayInstructionText);
+            updatePlanHeaderControls(calendarCore.lastDayInstructionText);
             break;
         case 'first':
             calendarCore.lastSelectedIndex = rowIndex;
             selectRowsBetween(calendarCore.firstSelectedIndex, calendarCore.lastSelectedIndex);
             calendarCore.selectionState = 'complete';
-            calendarCore.updatePlanHeaderControls(formatSelectionInfo());
-            calendarCore.attachButtonListeners();
+            updatePlanHeaderControls(formatSelectionInfo());
+            attachButtonListeners();
             break;
         case 'complete':
             clearSelection();
@@ -63,7 +61,7 @@ function handleRowClick(e) {
             calendarCore.firstSelectedIndex = rowIndex;
             calendarCore.lastSelectedIndex = -1;
             calendarCore.selectionState = 'first';
-            calendarCore.updatePlanHeaderControls(calendarCore.lastDayInstructionText);
+            updatePlanHeaderControls(calendarCore.lastDayInstructionText);
             break;
     }
     logSelectState();
@@ -127,7 +125,7 @@ function handleCreateEvent() {
     calendarCore.isSelectMode = false;
     
     const colorSelectionHTML = generateColorSelectionHTML();
-    calendarCore.updatePlanHeaderControls(colorSelectionHTML);
+    updatePlanHeaderControls(colorSelectionHTML);
     attachColorSelectionListeners();
 }
 
@@ -157,7 +155,7 @@ function showEventNameInput(selectedColor) {
             <button id="createEventBtn" style="background-color: ${selectedColor};">Create</button>
         </div>
     `;
-    calendarCore.updatePlanHeaderControls(inputHTML);
+    updatePlanHeaderControls(inputHTML);
     
     $('#eventNameInput').focus();
     
@@ -184,28 +182,49 @@ function attachEventNameInputListeners(selectedColor) {
 function createEventWithColorAndName(color, name) {
     console.log(`Creating event: ${name} with color: ${color}`);
     
-    // Create the event element
-    const eventElement = $('<button>')
-        .addClass('plan-category-element')
-        .text(name)
-        .css('background-color', color)
-        .data('category', name)
-        .data('details', '')
-        .attr('data-has-details', 'false');
+    const selectedRows = $('#calendarBody tr.selected-row');
+    if (selectedRows.length === 0) {
+        console.error('No rows selected');
+        return;
+    }
 
-    // Add the event to each selected row
-    calendarCore.selectedRows.forEach(rowIndex => {
-        const row = $('#calendarBody tr').eq(rowIndex);
-        const planCell = row.find('.plan-cell');
-        planCell.append(eventElement.clone());
-    });
+    const firstRow = selectedRows.first();
+    const lastRow = selectedRows.last();
+
+    const startDate = new Date(
+        parseInt(firstRow.attr('data-year')),
+        getMonthNumber(firstRow.attr('data-month')),
+        parseInt(firstRow.attr('data-day'))
+    );
+
+    const endDate = new Date(
+        parseInt(lastRow.attr('data-year')),
+        getMonthNumber(lastRow.attr('data-month')),
+        parseInt(lastRow.attr('data-day'))
+    );
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.error('Invalid date created', { startDate, endDate });
+        return;
+    }
+
+    const event = {
+        name: name,
+        color: color,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        details: ''
+    };
+
+    saveEventToStorage(event);
+    addEventToCalendar(event);
 
     // Reset selection and state
     clearSelection();
     calendarCore.isSelectMode = false;
     calendarCore.selectionState = 'none';
-    calendarCore.updatePlanHeaderControls(calendarCore.defaultInstructionText);
-    calendarCore.attachButtonListeners();
+    updatePlanHeaderControls(calendarCore.defaultInstructionText);
+    attachButtonListeners();
     logSelectState();
 }
 
@@ -224,19 +243,17 @@ function logSelectState() {
 function handlePlanElementClick(e) {
     e.stopPropagation();
     const button = $(e.currentTarget);
-    const name = button.text();
-    const color = button.css('background-color');
-    const details = button.data('details') || '';
+    const event = button.data('event');
     
-    showEventEditModal(button, name, color, details);
+    showEventEditModal(button, event);
 }
 
-function showEventEditModal(button, name, color, details) {
+function showEventEditModal(button, event) {
     const modalHTML = `
         <div class="event-modal">
             <h3>Edit Event</h3>
-            <input type="text" id="editEventName" value="${name}" placeholder="Event name">
-            <textarea id="editEventDetails" placeholder="Event details">${details}</textarea>
+            <input type="text" id="editEventName" value="${event.name}" placeholder="Event name">
+            <textarea id="editEventDetails" placeholder="Event details">${event.details || ''}</textarea>
             <div class="modal-buttons">
                 <button id="saveEventChanges">Save</button>
                 <button id="cancelEventChanges">Cancel</button>
@@ -255,8 +272,10 @@ function showEventEditModal(button, name, color, details) {
         const newDetails = $('#editEventDetails').val().trim();
         
         if (newName) {
+            const newEvent = {...event, name: newName, details: newDetails};
+            updateEventInStorage(event, newEvent);
             button.text(newName);
-            button.data('details', newDetails);
+            button.data('event', newEvent);
             button.attr('data-has-details', newDetails !== '' ? 'true' : 'false');
         }
         modal.remove();
@@ -268,18 +287,62 @@ function showEventEditModal(button, name, color, details) {
 
     $('#deleteEvent').on('click', function() {
         if (confirm('Are you sure you want to delete this event?')) {
-            button.remove();
+            deleteEventFromStorage(event);
+            removeEventFromCalendar(event);
             modal.remove();
         }
     });
 }
 
-function hideDisabledDays() {
-    $('#calendarBody tr.disabled-day').hide();
+function saveEventToStorage(event) {
+    const events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+    events.push(event);
+    localStorage.setItem('calendarEvents', JSON.stringify(events));
 }
 
-function showDisabledDays() {
-    $('#calendarBody tr.disabled-day').show();
+function updateEventInStorage(oldEvent, newEvent) {
+    const events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+    const index = events.findIndex(e => 
+        e.name === oldEvent.name && 
+        e.color === oldEvent.color && 
+        e.startDate === oldEvent.startDate && 
+        e.endDate === oldEvent.endDate
+    );
+    if (index !== -1) {
+        events[index] = newEvent;
+        localStorage.setItem('calendarEvents', JSON.stringify(events));
+    }
+}
+
+function deleteEventFromStorage(event) {
+    const events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+    const filteredEvents = events.filter(e => 
+        !(e.name === event.name && 
+          e.color === event.color && 
+          e.startDate === event.startDate && 
+          e.endDate === event.endDate)
+    );
+    localStorage.setItem('calendarEvents', JSON.stringify(filteredEvents));
+}
+
+function removeEventFromCalendar(event) {
+    $('.plan-category-element').each(function() {
+        const buttonEvent = $(this).data('event');
+        if (buttonEvent.name === event.name &&
+            buttonEvent.color === event.color &&
+            buttonEvent.startDate === event.startDate &&
+            buttonEvent.endDate === event.endDate) {
+            $(this).remove();
+        }
+    });
+}
+
+function getMonthNumber(monthName) {
+    const months = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+    };
+    return months[monthName] !== undefined ? months[monthName] : -1;
 }
 
 // Make sure to keep the functions that need to be in the global scope
