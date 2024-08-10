@@ -159,21 +159,19 @@ body, html {
 }
 
 .header-cell.plan-header {
-    justify-content: space-between;
-    flex-grow: 1; /* Allow the plan header to take remaining space */
-}
-
-.header-cell:last-child {
-    border-right: none;
-}
-
-.header-cell.plan-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: #3498db;
     color: white;
     border-right: 2px solid #2980b9;
     flex-grow: 1;
     width: auto;
     max-width: none;
+    font-weight: normal; /* Ensure the default text is not bold */
+}
+.header-cell:last-child {
+    border-right: none;
 }
 
 .header-cell.date-header,
@@ -436,7 +434,6 @@ td:first-child {
 
 .color-button-container {
     display: flex;
-    align-items: center;
 }
 
 .color-button {
@@ -446,8 +443,6 @@ td:first-child {
     border-radius: 50%;
     margin: 0 3px;
     cursor: pointer;
-    transition: transform 0.1s;
-    padding: 0;
 }
 
 .color-button:hover {
@@ -467,24 +462,10 @@ td:first-child {
 }
 
 #eventNameInput {
+    margin-right: 10px;
     padding: 5px;
-    margin-right: 5px;
     border: 1px solid #ccc;
     border-radius: 3px;
-}
-
-#createEventBtn {
-    margin-right: 5px;
-    padding: 5px 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-}
-
-#createEventBtn:hover {
-    background-color: #45a049;
 }
 
 .instruction-container {
@@ -505,12 +486,21 @@ td:first-child {
     align-items: center;
 }
 
-#selectButton {
-    margin: 0 5px;
-    padding: 2px 5px;
-    font-size: inherit;
-    line-height: 1;
+#selectButton, #createEventBtn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal; /* Ensure button text is not bold */
 }
+
+#selectButton:hover, #createEventBtn:hover {
+    background-color: #45a049;
+}
+
 
 .plan-category-element[data-has-details="true"] {
     text-decoration: underline;
@@ -522,4 +512,71 @@ td:first-child {
 .current-day-indicator {
     color: #1890ff;
     margin-right: 5px;
+}
+
+.plan-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.plan-header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    font-weight: normal; /* Ensure the default text is not bold */
+}
+
+/* Style for the selection info text */
+.plan-header-controls .selection-info {
+    font-weight: normal; /* Ensure the non-bold parts remain normal */
+}
+
+.plan-header-controls .selection-info strong {
+    font-weight: bold; /* Keep the bold parts bold */
+}
+
+.plan-header-controls span {
+    margin-right: 10px;
+}
+
+
+
+.plan-header-controls button:hover {
+    background-color: #45a049;
+}
+
+/* Styles for color selection and event name input */
+.color-selection,
+.event-name-input {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center these elements */
+}
+
+
+.color-button-container {
+    display: flex;
+    margin-left: 10px;
+}
+
+.color-button {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    margin: 0 3px;
+    cursor: pointer;
+}
+
+#eventNameInput {
+    margin-left: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
 }

@@ -3,18 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar Grid</title>
+    <title>Calendar App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="main-container">
         <div class="calendar-container">
-            <div class="calendar-header">
-                <div class="calendar-header-instructions">
-                    <!-- This will be filled by JavaScript -->
-                </div>
-            </div>
             <div class="calendar-body">
                 <div class="calendar-grid">
                     <div class="table-header">
@@ -22,23 +17,22 @@
                             Date (<span id="headerYear"></span>)
                         </div>
                         <div class="header-cell plan-header" aria-label="Plan Header">
-                            Plan
+                            <div id="planHeaderControls" class="plan-header-controls">
+                                <!-- Dynamic content will be inserted here by JavaScript -->
+                            </div>
                         </div>
                     </div>
                     <div class="table-body">
                         <table>
-                            <tbody id="calendarBody"></tbody>
+                            <tbody id="calendarBody">
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-<script>
-        var year = {{ year }};
-        var month = {{ month }};
-    </script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='calendarCore.js') }}"></script>
+    <script src="{{ url_for('static', filename='eventHandlers.js') }}"></script>
 </body>
 </html>
