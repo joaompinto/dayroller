@@ -138,38 +138,50 @@ body, html {
 .table-header {
     display: flex;
     background-color: #3498db;
-    font-weight: bold;
-    border-bottom: 2px solid #2980b9;
     color: white;
-    height: 50px; /* Set a fixed height for the entire header row */
+    font-weight: normal;
+    border-bottom: 2px solid #2980b9;
 }
+
 
 
 .header-cell {
-    position: relative;
-    padding: 0 10px; /* Remove vertical padding */
-    text-align: left;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    border-right: 1px solid #2980b9;
     display: flex;
     align-items: center;
-    height: 100%; /* Make sure each cell takes full height of the header */
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    height: 80px; /* Maintain the fixed height for both headers */
+}
+
+.header-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    height: 80px; /* Set a fixed height for both headers */
+}
+
+.header-cell.date-header {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    flex: 0 0 110px;
+    border-right: 1px solid #2980b9;
+    justify-content: center;
+    text-align: center;
 }
 
 .header-cell.plan-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #3498db;
-    color: white;
-    border-right: 2px solid #2980b9;
     flex-grow: 1;
     width: auto;
     max-width: none;
-    font-weight: normal; /* Ensure the default text is not bold */
+    border-right: 2px solid #2980b9;
+    flex-direction: column;
+    justify-content: center;
 }
+
 .header-cell:last-child {
     border-right: none;
 }
@@ -188,19 +200,15 @@ td.date-cell {
     border-right: 1px solid #ddd;
 }
 
-.header-cell.date-header {
-    border-right: 1px solid #2980b9;
-}
-
 
 .date-cell {
     font-size: 0.9em;
 }
 
 #headerYear {
-    font-weight: normal;
+    font-size: 1.2em; /* Increased font size for better visibility */
+    font-weight: bold; /* Make the year bold */
 }
-
 
 .table-body {
     overflow-y: auto;
@@ -398,27 +406,6 @@ td:first-child {
     overflow: hidden;
 }
 
-#selectButton,
-#createEventBtn {
-    padding: 5px 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-
-#selectButton:hover,
-#createEventBtn:hover {
-    background-color: #45a049;
-}
-
-#selectButton.active {
-    background-color: #555;
-}
-
 
 .color-selection {
     display: flex;
@@ -494,8 +481,10 @@ td:first-child {
     border-radius: 3px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: normal; /* Ensure button text is not bold */
+    font-weight: normal;
+    white-space: nowrap;
 }
+
 
 #selectButton:hover, #createEventBtn:hover {
     background-color: #45a049;
@@ -526,15 +515,14 @@ td:first-child {
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0 10px;
     box-sizing: border-box;
-    white-space: pre-wrap;
-    font-weight: normal; /* Ensure the default text is not bold */
+    font-weight: normal;
 }
 
-/* Style for the selection info text */
+
 .plan-header-controls .selection-info {
-    font-weight: normal; /* Ensure the non-bold parts remain normal */
+    font-weight: normal;
+    margin-right: 10px; /* Add some right margin to the selection info */
 }
 
 .plan-header-controls .selection-info strong {
@@ -579,4 +567,12 @@ td:first-child {
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 3px;
+}
+
+.selection-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }

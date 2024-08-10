@@ -85,10 +85,15 @@ function formatSelectionInfo() {
 
     let infoText = `<strong>${count}</strong> day${count !== 1 ? 's' : ''}`;
     if (weekendCount > 0) {
-        infoText += ` (<strong>${weekendCount}</strong> weekend day${weekendCount !== 1 ? 's' : ''})`;
+        infoText += ` (<strong>${weekendCount}</strong> on weekend)`;
     }
 
-    return `<button id="createEventBtn">Create Event</button> for <span class="selection-info">${infoText}</span>`;
+    return `
+        <div class="selection-info-container">
+            <div class="selection-info">${infoText}</div>
+            <button id="createEventBtn">Create Event</button>
+        </div>
+    `;
 }
 
 function selectSingleRow(index) {
