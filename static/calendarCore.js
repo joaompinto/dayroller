@@ -33,6 +33,48 @@ $(document).ready(function() {
     });
 
     setTimeout(scrollToCurrentDay, 500);
+
+    // Populate year picker
+    const yearPicker = document.getElementById('yearPicker');
+    for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+        const option = document.createElement('option');
+        option.value = y;
+        option.textContent = y;
+        yearPicker.appendChild(option);
+    }
+    yearPicker.value = currentYear;
+
+    // Set up year/month picker modal
+    const headerYearButton = document.getElementById('headerYearButton');
+    const yearMonthModal = document.getElementById('yearMonthModal');
+    const closeModal = document.getElementsByClassName('close')[0];
+    const applyYearMonth = document.getElementById('applyYearMonth');
+
+    headerYearButton.textContent = currentYear;
+    headerYearButton.addEventListener('click', function() {
+        yearMonthModal.style.display = 'block';
+    });
+
+    closeModal.addEventListener('click', function() {
+        yearMonthModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target == yearMonthModal) {
+            yearMonthModal.style.display = 'none';
+        }
+    });
+
+    applyYearMonth.addEventListener('click', function() {
+        const selectedYear = parseInt(yearPicker.value);
+        const selectedMonth = parseInt(document.getElementById('monthPicker').value) + 1; // 1-12
+        currentYear = selectedYear;
+        currentMonth = selectedMonth;
+        headerYearButton.textContent = currentYear;
+        yearMonthModal.style.display = 'none';
+        generateCalendarRows(currentYear, currentMonth);
+        loadEventsFromStorage();
+    });
 });
 
 function updatePlanHeaderControls(content) {
@@ -49,39 +91,57 @@ function generateCalendarRows(year, month) {
     calendarBody.empty(); // Clear existing rows
 
     const date = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0).getDate();
-
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    $('#headerYear').text(year);
+    $('#headerYearButton').text(year);
 
-    for (let day = 1; day <= lastDay; day++) {
-        date.setDate(day);
-        const dayOfWeek = date.getDay();
-        const row = $('<tr>')
-            .addClass('calendar-row')
-            .attr('data-year', year)
-            .attr('data-month', monthNames[month - 1])
-            .attr('data-day', day);
-        
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-            row.addClass('weekend');
+    const today = new Date();
+    const startDay = (year === today.getFullYear() && month === today.getMonth() + 1) ? today.getDate() - 1 : 1;
+
+    let firstMonth = monthNames[month - 1];
+    let lastMonth = firstMonth;
+
+    for (let m = 0; m < 3; m++) { // Loop through the current month and the next two months
+        const currentMonth = (month + m - 1) % 12;
+        const currentYear = year + Math.floor((month + m - 1) / 12);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        if (m === 2) {
+            lastMonth = monthNames[currentMonth];
         }
-        
-        const dateCell = $('<td>')
-            .html(`${(day + '').padStart(2, '0')} ${monthNames[month - 1]} <span class="weekday">${weekdays[dayOfWeek]}</span>`)
-            .addClass('date-cell');
 
-        const planCell = $('<td>').addClass('plan-cell');
+        for (let day = (m === 0 ? startDay : 1); day <= lastDay; day++) {
+            date.setFullYear(currentYear);
+            date.setMonth(currentMonth);
+            date.setDate(day);
+            const dayOfWeek = date.getDay();
+            const row = $('<tr>')
+                .addClass('calendar-row')
+                .attr('data-year', currentYear)
+                .attr('data-month', monthNames[currentMonth])
+                .attr('data-day', day);
 
-        row.append(dateCell);
-        row.append(planCell);
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                row.addClass('weekend');
+            }
 
-        calendarBody.append(row);
+            const dateCell = $('<td>')
+                .html(`${(day + '').padStart(2, '0')} ${monthNames[currentMonth]} <span class="weekday">${weekdays[dayOfWeek]}</span>`)
+                .addClass('date-cell');
+
+            const planCell = $('<td>').addClass('plan-cell');
+
+            row.append(dateCell);
+            row.append(planCell);
+
+            calendarBody.append(row);
+        }
     }
 
-    console.log(`Generated rows for ${year}-${month}`);
+    $('#headerMonths').text(`${firstMonth} - ${lastMonth}`);
+
+    console.log(`Generated rows for ${year}-${month} and the next two months`);
 }
 
 function loadEventsFromStorage() {
@@ -241,3 +301,9 @@ window.calendarCore = {
     selectModeInstructionText,
     lastDayInstructionText
 };
+
+document.addEventListener('DOMContentLoaded', function() {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const headerMonths = document.getElementById('headerMonths');
+    headerMonths.innerHTML = `${months[0]} - ${months[months.length - 1]}`;
+});
